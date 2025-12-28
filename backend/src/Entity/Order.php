@@ -18,8 +18,9 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $customerId = null; 
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $customer = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $totalPrice = null;
@@ -52,15 +53,25 @@ class Order
     {
         return $this->id;
     }
-
-    public function getCustomerId(): ?string
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->customerId;
+        return $this->createdAt;
+    }
+    
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
     }
 
-    public function setCustomerId(string $customerId): static
+    public function getCustomer(): ?User
     {
-        $this->customerId = $customerId;
+        return $this->customer;
+    }
+
+    public function setCustomer(?User $customer): static
+    {
+        $this->customer = $customer;
         return $this;
     }
 

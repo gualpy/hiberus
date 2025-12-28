@@ -2,6 +2,7 @@
 ├── ApiResource
 ├── Controller
 ├── Entity
+│   ├── OrderItem.php
 │   ├── Order.php
 │   ├── Product.php
 │   └── User.php
@@ -10,8 +11,9 @@
 ├── Kernel.php
 ├── path.txt
 └── Repository
+    ├── OrderItemRepository.php
     ├── OrderRepository.php
     ├── ProductRepository.php
     └── UserRepository.php
 
-5 directories, 9 files
+5 directories, 11 files
