@@ -18,9 +18,8 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    #[ORM\Column(length: 50)]
+    private ?string $customerId = null; 
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $totalPrice = null;
@@ -28,25 +27,25 @@ class Order
     #[ORM\Column(enumType: OrderStatus::class)]
     private ?OrderStatus $status = null;
 
-    #[ORM\Column]
-    private ?\DateTime $createAt = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
 
     /**
      * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderRef')]
-    private Collection $product;
-
-    /**
-     * @var Collection<int, OrderItem>
-     */
-    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderRef', orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'orderRef',
+        targetEntity: OrderItem::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $orderItems;
 
     public function __construct()
     {
-        $this->product = new ArrayCollection();
         $this->orderItems = new ArrayCollection();
+        $this->createdAt = new \DateTime();
+        $this->status = OrderStatus::PENDING;
     }
 
     public function getId(): ?int
@@ -54,15 +53,14 @@ class Order
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getCustomerId(): ?string
     {
-        return $this->user;
+        return $this->customerId;
     }
 
-    public function setUser(?User $user): static
+    public function setCustomerId(string $customerId): static
     {
-        $this->user = $user;
-
+        $this->customerId = $customerId;
         return $this;
     }
 
@@ -74,7 +72,6 @@ class Order
     public function setTotalPrice(string $totalPrice): static
     {
         $this->totalPrice = $totalPrice;
-
         return $this;
     }
 
@@ -86,49 +83,6 @@ class Order
     public function setStatus(OrderStatus $status): static
     {
         $this->status = $status;
-
-        return $this;
-    }
-
-    public function getCreateAt(): ?\DateTime
-    {
-        return $this->createAt;
-    }
-
-    public function setCreateAt(\DateTime $createAt): static
-    {
-        $this->createAt = $createAt;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, OrderItem>
-     */
-    public function getProduct(): Collection
-    {
-        return $this->product;
-    }
-
-    public function addProduct(OrderItem $product): static
-    {
-        if (!$this->product->contains($product)) {
-            $this->product->add($product);
-            $product->setOrderRef($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProduct(OrderItem $product): static
-    {
-        if ($this->product->removeElement($product)) {
-            // set the owning side to null (unless already changed)
-            if ($product->getOrderRef() === $this) {
-                $product->setOrderRef(null);
-            }
-        }
-
         return $this;
     }
 
@@ -153,7 +107,6 @@ class Order
     public function removeOrderItem(OrderItem $orderItem): static
     {
         if ($this->orderItems->removeElement($orderItem)) {
-            // set the owning side to null (unless already changed)
             if ($orderItem->getOrderRef() === $this) {
                 $orderItem->setOrderRef(null);
             }

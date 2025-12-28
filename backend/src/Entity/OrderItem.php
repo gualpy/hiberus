@@ -23,7 +23,7 @@ class OrderItem
     private ?Product $product = null;
 
     #[ORM\Column]
-    private ?int $quantify = null;
+    private ?int $quantity = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $price = null;
@@ -41,7 +41,6 @@ class OrderItem
     public function setOrderRef(?Order $orderRef): static
     {
         $this->orderRef = $orderRef;
-
         return $this;
     }
 
@@ -50,22 +49,20 @@ class OrderItem
         return $this->product;
     }
 
-    public function setProduct(?Product $product): static
+    public function setProduct(Product $product): static
     {
         $this->product = $product;
-
         return $this;
     }
 
-    public function getQuantify(): ?int
+    public function getQuantity(): ?int
     {
-        return $this->quantify;
+        return $this->quantity;
     }
 
-    public function setQuantify(int $quantify): static
+    public function setQuantity(int $quantity): static
     {
-        $this->quantify = $quantify;
-
+        $this->quantity = $quantity;
         return $this;
     }
 
@@ -77,7 +74,6 @@ class OrderItem
     public function setPrice(string $price): static
     {
         $this->price = $price;
-
         return $this;
     }
 }
