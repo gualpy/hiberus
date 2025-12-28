@@ -1,0 +1,22 @@
+.
+├── app.js
+├── bootstrap.js
+├── controllers
+│   └── hello_controller.js
+├── controllers.json
+├── js
+│   └── components
+│       ├── app..js
+│       └── Catalogo.js
+├── path.txt
+├── styles
+│   └── app.css
+└── vendor
+    ├── @hotwired
+    │   ├── stimulus
+    │   │   └── stimulus.index.js
+    │   └── turbo
+    │       └── turbo.index.js
+    └── installed.php
+
+8 directories, 11 files

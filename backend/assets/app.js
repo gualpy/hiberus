@@ -1,4 +1,5 @@
 import './bootstrap.js';
+import './js/components/app.js'; // Esto cargará tu lógica de React
 /*
  * Welcome to your app's main JavaScript file!
  *
