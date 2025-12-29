@@ -4,11 +4,12 @@
         <meta charset="UTF-8">
         <title>{% block title %}Tienda Hiberus{% endblock %}</title>
         {% block stylesheets %}{% endblock %}
-
         {% block javascripts %}
-            {# {% block importmap %}{{ importmap('app') }}{% endblock %} #}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    {{ importmap('app') }}
+    <script type="module">
+        import 'app'; 
+    </script>
+{% endblock %}
     </head>
     <body>
         {# El div de React DEBE ir en el body #}

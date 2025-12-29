@@ -11,33 +11,22 @@
  *
  * The "importmap:require" command can be used to add new entries to this file.
  */
+
 return [
     'app' => [
-        'path' => 'assets/app.jsx',
+        'path' => 'app.js',
         'entrypoint' => true,
     ],
-    '@hotwired/stimulus' => [
-        'version' => '3.2.2',
-    ],
-    '@symfony/stimulus-bundle' => [
-        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
-    ],
-    '@hotwired/turbo' => [
-        'version' => '7.3.0',
-    ],
     'react' => [
-        'version' => '19.2.3',
+        'url' => 'https://ga.jspm.io/npm:react@18.3.1/index.js',
     ],
     'react-dom' => [
-        'version' => '19.2.3',
+        'url' => 'https://ga.jspm.io/npm:react-dom@18.3.1/index.js',
     ],
     'react-dom/client' => [
-        'version' => '18.3.1',
+        'url' => 'https://ga.jspm.io/npm:react-dom@18.3.1/client.js',
     ],
     'scheduler' => [
-        'version' => '0.23.2',
-    ],
-    '@symfony/ux-react' => [
-        'path' => './vendor/symfony/ux-react/assets/dist/loader.js',
+        'url' => 'https://ga.jspm.io/npm:scheduler@0.23.2/index.js',
     ],
 ];
