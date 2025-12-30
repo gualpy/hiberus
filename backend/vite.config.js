@@ -21,6 +21,13 @@ export default defineConfig({
         port: 5173,
         hmr: {
             host: 'localhost', // esto arregla lo que se inyecta en el navegador
+        },
+        proxy: {
+            '/api': {
+                target: 'http://127.0.0.1:8080', // Si usas Docker, prueba 'http://php' o 'http://web'
+                changeOrigin: true,
+                secure: false,
+            }
         }
     }
 });

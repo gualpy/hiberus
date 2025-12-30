@@ -1,108 +1,120 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import Catalogo from './js/components/Catalogo.js';
+import Login from './js/components/Login.js';
+import './styles/app.css';
 
 const App = () => {
     const [carrito, setCarrito] = useState([]);
     const [cargando, setCargando] = useState(false);
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('user');
+        return saved ? JSON.parse(saved) : null;
+    });
 
-    // 1. Lógica para añadir al carrito (desde el componente Catalogo)
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        setUser(null);
+    };
+
     const agregarAlCarrito = (producto) => {
         setCarrito(prev => [...prev, { ...producto, quantity: 1 }]);
     };
 
-    // 2. UC-O03: Lógica para simular el Pago (Checkout)
-    const procederAlPago = async (orderId) => {
+    // FUNCIÓN UC-P02 (CORREGIDA)
+    const crearProducto = async () => {
+        const name = prompt("Nombre del producto:");
+        const price = prompt("Precio (ej: 10.50):");
+        const stock = prompt("Stock inicial:");
+
+        if (!name || !price) return;
+
         try {
-            const response = await fetch(`/api/orders/${orderId}/checkout`, {
-                method: 'POST'
+            const response = await fetch('http://127.0.0.1:8080/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    price: parseFloat(price),
+                    stock: parseInt(stock) || 0
+                })
             });
-            const data = await response.json();
 
             if (response.ok) {
-                alert("¡Pago exitoso! Estado del pedido: PAID");
+                alert("Producto creado correctamente en la base de datos.");
+                // Opcional: podrías recargar la página o el catálogo aquí
             } else {
-                alert("Error en el pago: " + data.error);
+                const errorData = await response.json();
+                alert("Error: " + errorData.error);
             }
         } catch (error) {
-            console.error("Error en checkout:", error);
+            console.log(error);
+            alert("Error de conexión con el servidor");
         }
     };
 
-    // 3. UC-O01: Lógica para enviar el pedido al Backend
     const finalizarPedido = async () => {
         if (carrito.length === 0) return;
-
         setCargando(true);
-        const payload = {
-            userId: 2, // ID del cliente creado en Fixtures
-            items: carrito.map(i => ({
-                productId: i.id,
-                quantity: i.quantity
-            }))
-        };
-
         try {
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    userId: user.id,
+                    items: carrito.map(i => ({ productId: i.id, quantity: i.quantity }))
+                })
             });
-
             const data = await response.json();
-
             if (response.ok) {
-                alert(`¡Pedido #${data.orderId} creado con éxito!`);
-                setCarrito([]); // Limpiar carrito
-
-                // Preguntar si desea pagar de una vez
-                if (window.confirm("¿Deseas procesar el pago (Checkout) ahora?")) {
-                    await procederAlPago(data.orderId);
-                }
-            } else {
-                alert("Error: " + (data.error || "No se pudo crear el pedido"));
+                alert(`¡Pedido #${data.orderId} creado!`);
+                setCarrito([]);
             }
-        } catch (error) {
-            alert("Error de conexión con el servidor");
-            console.error(error);
-        } finally {
-            setCargando(false);
-        }
+        } catch (e) { alert("Error de conexión"); }
+        finally { setCargando(false); }
     };
 
-    return React.createElement('div', { style: { fontFamily: 'Arial', padding: '20px' } },
-        React.createElement('h1', null, 'Tienda Hiberus'),
+    if (!user) {
+        return React.createElement(Login, { onLogin: setUser });
+    }
 
-        // Bloque del Carrito
-        React.createElement('div', {
-            style: { background: '#f4f4f4', padding: '15px', borderRadius: '8px', marginBottom: '20px' }
-        },
-            React.createElement('h2', null, 'Mi Carrito'),
-            React.createElement('p', null, `Productos en carrito: ${carrito.length}`),
-
-            // El botón solo aparece si hay productos y no estamos procesando
-            carrito.length > 0 && React.createElement('button', {
-                onClick: finalizarPedido,
-                disabled: cargando,
-                style: {
-                    background: '#28a745',
-                    color: 'white',
-                    padding: '10px 20px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: cargando ? 'not-allowed' : 'pointer'
-                }
-            }, cargando ? 'Procesando...' : 'FINALIZAR PEDIDO Y PAGAR')
+    return React.createElement('div', { className: 'app-wrapper' },
+        React.createElement('header', { className: 'app-header' },
+            React.createElement('div', { className: 'user-tag' },
+                React.createElement('span', null, `👤 ${user.name}`),
+                React.createElement('span', { className: 'role-pill' }, user.role)
+            ),
+            React.createElement('button', { className: 'logout-link', onClick: handleLogout }, 'Salir')
         ),
 
-        // Componente del Catálogo
-        React.createElement(Catalogo, { alAgregarAlCarrito: agregarAlCarrito })
+        React.createElement('div', { className: 'view-container' },
+            user.role === 'ROLE_ADMIN' ? (
+                React.createElement('div', { className: 'admin-card' },
+                    React.createElement('h2', null, 'Panel de Administración'),
+                    React.createElement('p', null, 'Gestión de productos en tiempo real'),
+                    React.createElement('button', {
+                        className: 'btn-checkout',
+                        style: { background: '#1e293b', marginTop: '20px' },
+                        onClick: crearProducto // <--- AHORA SÍ LLAMA A LA FUNCIÓN REAL
+                    }, '+ Nuevo Producto Real')
+                )
+            ) : (
+                React.createElement(React.Fragment, null,
+                    React.createElement('div', { className: 'cart-summary' },
+                        React.createElement('h2', null, '🛒 Carrito'),
+                        React.createElement('p', null, `Items: ${carrito.length}`),
+                        carrito.length > 0 && React.createElement('button', {
+                            className: 'btn-checkout',
+                            onClick: finalizarPedido,
+                            disabled: cargando
+                        }, cargando ? 'Enviando...' : 'PAGAR')
+                    ),
+                    React.createElement(Catalogo, { alAgregarAlCarrito: agregarAlCarrito })
+                )
+            )
+        )
     );
 };
 
-// Renderizado en el div #root de Twig
-const rootElement = document.getElementById('root');
-if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(React.createElement(App));
-}
+const root = document.getElementById('root');
+if (root) ReactDOM.createRoot(root).render(React.createElement(App));

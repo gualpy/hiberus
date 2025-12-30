@@ -1,3 +1,87 @@
-body {
-    background-color: lightgray;
+/* assets/styles/app.css */
+
+.app-wrapper {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Header Estilo Dashboard */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.user-tag {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.role-pill {
+    background: #38bdf8;
+    color: #0c4a6e;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.logout-link {
+    background: transparent;
+    border: 1px solid #f1f5f9;
+    color: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-link:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+/* Contenedores de Vistas */
+.view-container {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Panel Admin (UC-P02) */
+.admin-card {
+    background: white;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    color: #64748b;
+}
+
+.admin-card h2 { color: #1e293b; }
+
+/* Carrito (UC-O01) */
+.cart-summary {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    border-left: 6px solid #22c55e;
 }
