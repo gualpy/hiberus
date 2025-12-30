@@ -80,7 +80,7 @@ class OrderController extends AbstractController
             'total' => $order->getTotalPrice()
         ], 201);
     }
-    #[Route('/{id}/pay', name: 'pay', methods: ['POST'])]
+    #[Route('/{id}/checkout', name: 'checkout', methods: ['POST'])]
     public function pay(Order $order, EntityManagerInterface $em): JsonResponse
     {
         // Validación de estado: solo se paga lo que está pendiente
@@ -100,21 +100,15 @@ class OrderController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Order $order): JsonResponse
     {
-        // UC-002: Ver detalle del pedido
-        $items = [];
-        foreach ($order->getOrderItems() as $item) {
-            $items[] = [
-                'product' => $item->getProduct()->getName(),
-                'quantity' => $item->getQuantity(),
-                'price' => $item->getPrice()
-            ];
-        }
-
         return $this->json([
             'id' => $order->getId(),
             'status' => $order->getStatus()->value,
             'total' => $order->getTotalPrice(),
-            'items' => $items
+            'items' => array_map(fn($item) => [
+                'product' => $item->getProduct()->getName(),
+                'qty' => $item->getQuantity(),
+                'subtotal' => $item->getPrice() * $item->getQuantity()
+            ], $order->getOrderItems()->toArray())
         ]);
     }
 }

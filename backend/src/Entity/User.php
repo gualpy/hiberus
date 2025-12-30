@@ -52,7 +52,7 @@ class User
     public function getPassword(): ?string
     {
         return $this->password;
-    }
+    } 
 
     public function setPassword(string $password): static
     {

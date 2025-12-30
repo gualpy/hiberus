@@ -1,15 +1,14 @@
 .
-├── app copy.js
+├── app.css
 ├── app.js
 ├── bootstrap.js
 ├── controllers
 │   └── hello_controller.js
 ├── controllers.json
-├── hello.js
 ├── js
 │   └── components
-│       ├── Catalogo copy.js
-│       └── Catalogo.js
+│       ├── Catalogo.js
+│       └── Login.js
 ├── path.txt
 ├── react
 │   └── controllers
@@ -31,4 +30,4 @@
     └── scheduler
         └── scheduler.index.js
 
-13 directories, 18 files
+13 directories, 17 files
