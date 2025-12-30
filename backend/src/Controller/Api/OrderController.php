@@ -26,9 +26,11 @@ class OrderController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         // 1. Buscar al usuario (ID 1 por defecto si no viene, para pruebas rápidas)
+        $user = $userRepository->findOneBy(['user_code' => $data['user_code']]);
         $userId = $data['userId'] ?? 1;
+        
         $user = $userRepository->find($userId);
-
+        //dd($user);
         if (!$user) {
             return $this->json(['error' => 'Usuario no encontrado'], 404);
         }

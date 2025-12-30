@@ -22,6 +22,9 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
+    #[ORM\Column(length: 20, unique: true)]
+    private ?string $user_code = null; // Ej: 'CLIENTE-01', 'ADMIN-01'
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,11 +55,23 @@ class User
     public function getPassword(): ?string
     {
         return $this->password;
-    } 
+    }
+
 
     public function setPassword(string $password): static
     {
         $this->password = $password;
+        return $this;
+    }
+
+    public function getUserCode(): ?string
+    {
+        return $this->user_code;
+    }
+
+    public function setUserCode(string $user_code): static
+    {
+        $this->user_code = $user_code;
         return $this;
     }
 }

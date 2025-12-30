@@ -18,11 +18,13 @@ const App = () => {
     };
 
     const agregarAlCarrito = (producto) => {
-        setCarrito(prev => [...prev, { ...producto, quantity: 1 }]);
+        // Aseguramos que el precio sea un número para evitar errores en el total
+        const precioNumerico = parseFloat(producto.price) || 0;
+        setCarrito(prev => [...prev, { ...producto, cod_product: producto.cod_product, price: precioNumerico, quantity: 1 }]);
     };
 
-    // FUNCIÓN UC-P02 (CORREGIDA)
     const crearProducto = async () => {
+        const cod_product = prompt("Código del producto");
         const name = prompt("Nombre del producto:");
         const price = prompt("Precio (ej: 10.50):");
         const stock = prompt("Stock inicial:");
@@ -30,10 +32,11 @@ const App = () => {
         if (!name || !price) return;
 
         try {
-            const response = await fetch('http://127.0.0.1:8080/api/products', {
+            const response = await fetch('/api/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    cod_product,
                     name,
                     price: parseFloat(price),
                     stock: parseInt(stock) || 0
@@ -41,44 +44,58 @@ const App = () => {
             });
 
             if (response.ok) {
-                alert("Producto creado correctamente en la base de datos.");
-                // Opcional: podrías recargar la página o el catálogo aquí
+                alert(" Producto creado correctamente.");
             } else {
                 const errorData = await response.json();
-                alert("Error: " + errorData.error);
+                alert(" Error: " + errorData.error);
             }
         } catch (error) {
-            console.log(error);
             alert("Error de conexión con el servidor");
         }
     };
 
     const finalizarPedido = async () => {
         if (carrito.length === 0) return;
+        console.log(carrito);
         setCargando(true);
         try {
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    code_user: user.user_code,
                     userId: user.id,
-                    items: carrito.map(i => ({ productId: i.id, quantity: i.quantity }))
+                    items: carrito.map(i => ({ code_user: i.code_user, productId: i.id, quantity: i.quantity }))
                 })
             });
+            console.log(response);
             const data = await response.json();
+            
             if (response.ok) {
                 alert(`¡Pedido #${data.orderId} creado!`);
                 setCarrito([]);
+
+                if (window.confirm("¿Deseas pagar este pedido ahora?")) {
+                    const pagoRes = await fetch(`/api/orders/${data.orderId}/checkout`, { method: 'POST' });
+                    if (pagoRes.ok) alert("Pago procesado con éxito.");
+                }
             }
-        } catch (e) { alert("Error de conexión"); }
-        finally { setCargando(false); }
+        } catch (e) { 
+            alert("Error al procesar el pedido"); 
+        } finally { 
+            setCargando(false); 
+        }
     };
+
+    // Calcular el total de forma segura
+    const totalPagar = carrito.reduce((acc, item) => acc + (item.price || 0), 0);
 
     if (!user) {
         return React.createElement(Login, { onLogin: setUser });
     }
 
     return React.createElement('div', { className: 'app-wrapper' },
+        // HEADER
         React.createElement('header', { className: 'app-header' },
             React.createElement('div', { className: 'user-tag' },
                 React.createElement('span', null, `👤 ${user.name}`),
@@ -89,25 +106,44 @@ const App = () => {
 
         React.createElement('div', { className: 'view-container' },
             user.role === 'ROLE_ADMIN' ? (
+                // VISTA ADMIN
                 React.createElement('div', { className: 'admin-card' },
                     React.createElement('h2', null, 'Panel de Administración'),
-                    React.createElement('p', null, 'Gestión de productos en tiempo real'),
                     React.createElement('button', {
                         className: 'btn-checkout',
                         style: { background: '#1e293b', marginTop: '20px' },
-                        onClick: crearProducto // <--- AHORA SÍ LLAMA A LA FUNCIÓN REAL
+                        onClick: crearProducto
                     }, '+ Nuevo Producto Real')
                 )
             ) : (
+                // VISTA CLIENTE
                 React.createElement(React.Fragment, null,
                     React.createElement('div', { className: 'cart-summary' },
-                        React.createElement('h2', null, '🛒 Carrito'),
-                        React.createElement('p', null, `Items: ${carrito.length}`),
+                        React.createElement('h2', null, '🛒 Mi Carrito'),
+                        
+                        // Lista de productos
+                        carrito.length > 0 ? (
+                            React.createElement('div', null,
+                                carrito.map((item, idx) => 
+                                    React.createElement('div', { key: idx, className: 'cart-item-row', style: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' } },
+                                        React.createElement('span', null, item.name),
+                                        React.createElement('span', null, `$${(item.price || 0).toFixed(2)}`)
+                                    )
+                                ),
+                                React.createElement('div', { style: { marginTop: '15px', textAlign: 'right', fontWeight: 'bold', fontSize: '1.2em', color: '#22c55e' } },
+                                    `Total: $${totalPagar.toFixed(2)}`
+                                )
+                            )
+                        ) : (
+                            React.createElement('p', null, 'El carrito está vacío')
+                        ),
+
                         carrito.length > 0 && React.createElement('button', {
                             className: 'btn-checkout',
+                            style: { marginTop: '20px' },
                             onClick: finalizarPedido,
                             disabled: cargando
-                        }, cargando ? 'Enviando...' : 'PAGAR')
+                        }, cargando ? 'Enviando...' : 'PAGAR AHORA')
                     ),
                     React.createElement(Catalogo, { alAgregarAlCarrito: agregarAlCarrito })
                 )

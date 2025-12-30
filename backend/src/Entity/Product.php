@@ -26,6 +26,9 @@ class Product
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $stock = null;
 
+    #[ORM\Column(length: 50, unique: true)]
+    private ?string $cod_product = null; // Ej: 'MON-24-GAMER'
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class Product
     public function setStock(string $stock): static
     {
         $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getCodProduct(): ?string
+    {
+        return $this->cod_product;
+    }
+
+    public function setCodProduct(string $cod_product): static
+    {
+        $this->cod_product = $cod_product;
 
         return $this;
     }

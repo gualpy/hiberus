@@ -31,6 +31,9 @@ class Order
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
+    #[ORM\Column(length: 50, unique: true)]
+    private ?string $number_order = null; // Ej: 'ORD-2024-0001'
+
     /**
      * @var Collection<int, OrderItem>
      */
@@ -94,6 +97,17 @@ class Order
     public function setStatus(OrderStatus $status): static
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getNumberOrder(): ?string
+    {
+        return $this->number_order;
+    }
+
+    public function setNumberOrder(string $number_order): static
+    {
+        $this->number_order = $number_order;
         return $this;
     }
 
