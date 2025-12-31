@@ -21,15 +21,15 @@ MySQL or MariaDB
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
 ```
-## 🐳 Quick Start with Docker
+##  Quick Start
 
 1. **Build and Start:**
    ```bash
-   docker-compose up -d --build
+      docker-compose up -d hiberus
    ```
-2. **Enter the directory:**   
+2. **run vite from vcode backend/:**   
     ```bash
-   docker exec -it php bash
+   npm run dev
    ```
 
 **Environment Variables:** Create or edit your .env.local file and configure your database connection:
