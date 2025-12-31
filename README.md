@@ -27,7 +27,7 @@ cd your-repo-name
    ```bash
       docker-compose up -d hiberus
    ```
-2. **run vite from vcode backend/:**   
+2. **run vite from visual studio code terminal backend/:**   
     ```bash
    npm run dev
    ```
