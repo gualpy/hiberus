@@ -15,12 +15,6 @@ Symfony CLI (optional but recommended)
 
 MySQL or MariaDB
 
-## Installation & Setup
-
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
-```
 ##  Quick Start
 
 1. **Build and Start:**
