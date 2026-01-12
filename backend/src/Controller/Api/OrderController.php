@@ -25,55 +25,74 @@ class OrderController extends AbstractController
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
-        // 1. Buscar al usuario (ID 1 por defecto si no viene, para pruebas rápidas)
-        $user = $userRepository->findOneBy(['user_code' => $data['user_code']]);
-        $userId = $data['userId'] ?? 1;
-        
-        $user = $userRepository->find($userId);
-        //dd($user);
-        if (!$user) {
-            return $this->json(['error' => 'Usuario no encontrado'], 404);
+        if (!$data) {
+            return $this->json(['error' => 'JSON inválido'], 400);
         }
 
+        // 1. Buscar al usuario por código o por ID (Priorizamos user_code del JSON)
+        //$user = $userRepository->findOneBy(['user_code' => $data['user_code'] ?? '']);
+
+        $user = null;
+        if (isset($data['user_code'])) {
+            $user = $userRepository->findOneBy(['user_code' => $data['user_code']]);
+        }
+
+        if (!$user && isset($data['userId'])) {
+            $user = $userRepository->find($data['userId']);
+        }
+
+        if (!$user) {
+            return $this->json([
+                'error' => 'Usuario no encontrado. Recibido ID: ' . ($data['userId'] ?? 'null') . ' y Código: ' . ($data['user_code'] ?? 'null')
+            ], 404);
+        }
+
+        // 2. Crear y PERSISTIR la Orden principal primero (Evita el error de New Entity)
         $order = new Order();
-        $order->setCustomer($user); // Ahora coincide con tu entidad
+        $order->setNumberOrder('ORD-' . strtoupper(substr(uniqid(), -6)));
+        $order->setCustomer($user);
         $order->setStatus(OrderStatus::PENDING);
-        $order->setCreatedAt(new \DateTime()); // Ahora coincide con tu entidad
+        $order->setCreatedAt(new \DateTime());
+
+        $em->persist($order); // <--- Clave para evitar el error que tuviste
 
         $totalPrice = 0;
 
-        // 2. Procesar productos y validar STOCK
+        // 3. Procesar productos
+        // Usamos el campo 'quantity' que ya viene en tu objeto de React
         foreach ($data['items'] as $itemData) {
-            $product = $productRepository->find($itemData['productId']);
+            $product = $productRepository->find($itemData['id']);
 
             if (!$product) {
-                return $this->json(['error' => "Producto ID {$itemData['productId']} no existe"], 404);
+                return $this->json(['error' => "Producto ID {$itemData['id']} no existe"], 404);
             }
 
-            if ($product->getStock() < $itemData['quantity']) {
+            $cantidadSolicitada = (int)$itemData['quantity'];
+
+            // Validar STOCK
+            if ((float)$product->getStock() < $cantidadSolicitada) {
                 return $this->json(['error' => "Stock insuficiente para: " . $product->getName()], 400);
             }
 
+            // Crear el Item de la orden
             $orderItem = new OrderItem();
             $orderItem->setProduct($product);
-            $orderItem->setQuantity($itemData['quantity']);
-            // Forzamos el precio actual del producto al item
+            $orderItem->setQuantity($cantidadSolicitada);
             $orderItem->setPrice($product->getPrice());
             $orderItem->setOrderRef($order);
 
-            // Restamos stock directamente en el objeto
-            $product->setStock($product->getStock() - $itemData['quantity']);
+            // Restar stock
+            $product->setStock((string)((float)$product->getStock() - $cantidadSolicitada));
 
-            // Calculamos el total acumulado convirtiendo a float
-            $totalPrice += ((float)$product->getPrice() * (int)$itemData['quantity']);
+            // Acumular total
+            $totalPrice += ((float)$product->getPrice() * $cantidadSolicitada);
 
             $em->persist($orderItem);
         }
 
-        $order->setTotalPrice((string)$totalPrice); // Guardamos como string para el tipo Decimal
+        // 4. Finalizar y Guardar
+        $order->setTotalPrice((string)$totalPrice);
 
-        $order->setTotalPrice((string)$totalPrice); // Convertimos a string por el tipo Decimal
-        $em->persist($order);
         $em->flush();
 
         return $this->json([
@@ -82,10 +101,10 @@ class OrderController extends AbstractController
             'total' => $order->getTotalPrice()
         ], 201);
     }
+
     #[Route('/{id}/checkout', name: 'checkout', methods: ['POST'])]
     public function pay(Order $order, EntityManagerInterface $em): JsonResponse
     {
-        // Validación de estado: solo se paga lo que está pendiente
         if ($order->getStatus() !== OrderStatus::PENDING) {
             return $this->json(['error' => 'El pedido ya no se puede pagar (Estado actual: ' . $order->getStatus()->value . ')'], 400);
         }
@@ -99,6 +118,7 @@ class OrderController extends AbstractController
             'newStatus' => $order->getStatus()->value
         ]);
     }
+
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Order $order): JsonResponse
     {
@@ -109,7 +129,7 @@ class OrderController extends AbstractController
             'items' => array_map(fn($item) => [
                 'product' => $item->getProduct()->getName(),
                 'qty' => $item->getQuantity(),
-                'subtotal' => $item->getPrice() * $item->getQuantity()
+                'subtotal' => (float)$item->getPrice() * $item->getQuantity()
             ], $order->getOrderItems()->toArray())
         ]);
     }

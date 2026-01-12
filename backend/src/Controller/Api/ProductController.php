@@ -23,12 +23,13 @@ class ProductController extends AbstractController
             return [
                 'id' => $p->getId(),
                 'name' => $p->getName(),
+                'description' => $p->getDescription(),
                 'price' => $p->getPrice(),
                 'stock' => $p->getStock(),
-                'description' => $p->getDescription()
+                'cod_product' => $p->getCodProduct()
             ];
         }, $products);
-
+        
         return $this->json($data);
     }
 
@@ -47,6 +48,7 @@ class ProductController extends AbstractController
         $product->setPrice((float)$data['price']);
         $product->setStock((int)($data['stock'] ?? 0));
         $product->setDescription($data['description'] ?? '');
+        $product->setCodProduct($data['cod_product'] ?? uniqid('PROD-'));
 
         $em->persist($product);
         $em->flush();
